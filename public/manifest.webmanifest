@@ -1,11 +1,11 @@
 {
-  "name": "Hodi — Huduma Mlangoni",
-  "short_name": "Hodi",
-  "description": "Book a verified barber or groomer to come to you, in Dar es Salaam.",
+  "name": "HODI — Barber to your door",
+  "short_name": "HODI",
+  "description": "Request a professional barber to your door in Dar es Salaam. Track arrival, pay with mobile money.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0e7c66",
+  "background_color": "#0F3D2E",
+  "theme_color": "#0F3D2E",
   "icons": [
     {
       "src": "/icon.svg",

@@ -10,14 +10,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Hodi — Huduma Mlangoni",
-  description: "Book a verified barber or groomer to come to you, in Dar es Salaam.",
+  title: "HODI — Tunakuletea kinyozi mlangoni",
+  description: "Request a professional barber to your door in Dar es Salaam. Track arrival, pay with mobile money.",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.svg" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e7c66",
+  themeColor: "#0F3D2E",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="sw" className={inter.variable}>
+    <html lang="en" className={inter.variable}>
       <body>
         <Providers>{children}</Providers>
       </body>

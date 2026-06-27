@@ -29,7 +29,7 @@ export function Button({
     secondary: "bg-white text-ink border border-line hover:border-ink-faint/40 hover:bg-surface-sunken",
     ghost: "bg-transparent text-ink-soft hover:bg-black/[0.04]",
     danger: "bg-rose-600 text-white hover:bg-rose-700",
-    accent: "bg-accent-500 text-white hover:bg-accent-600 shadow-xs",
+    accent: "bg-accent-500 text-brand-900 hover:bg-accent-600 shadow-xs",
   };
   return (
     <button className={cx(base, sizes[size], variants[variant], className)} {...rest}>

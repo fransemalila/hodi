@@ -9,28 +9,28 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Hodi brand — deep Tanzanian green
+        // Hodi brand — deep barber green (#0F3D2E) + gold accent (#C9A227)
         brand: {
-          50: "#eefbf4",
-          100: "#d6f5e3",
-          200: "#b0e9cd",
-          300: "#7dd7af",
-          400: "#46bd8c",
-          500: "#1fa471",
-          600: "#10885d",
-          700: "#0c6c4c",
-          800: "#0d5640",
-          900: "#0c4636",
-          950: "#04271e",
+          50: "#eef5f1",
+          100: "#d4e6dd",
+          200: "#a9cdbb",
+          300: "#76ac95",
+          400: "#46896f",
+          500: "#246b52",
+          600: "#14543f",
+          700: "#0F3D2E",
+          800: "#0c3325",
+          900: "#08231a",
+          950: "#051712",
         },
         accent: {
-          50: "#fff8ed",
-          100: "#ffefd3",
-          200: "#fedba5",
-          300: "#fdc06d",
-          400: "#fb9d3a",
-          500: "#f97e15",
-          600: "#ea6109",
+          50: "#fbf7ea",
+          100: "#f5ebc6",
+          200: "#ecd88a",
+          300: "#e0c155",
+          400: "#d4ad33",
+          500: "#C9A227",
+          600: "#a3801d",
         },
         // Cool neutral scale for a calmer, more "product" surface
         ink: {
