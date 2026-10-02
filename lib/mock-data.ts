@@ -1,5 +1,22 @@
 import type { Service, Provider, Booking, SavedLocation } from "./types";
 
+const unsplash = (id: string) =>
+  `https://images.unsplash.com/${id}?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800`;
+
+const PHOTOS = {
+  juma: unsplash("flagged/photo-1573137707067-95ae9d7bc599"),
+  baraka: unsplash("photo-1668752600261-e56e7f3780b6"),
+  amani: unsplash("photo-1686671805337-7d8aa64b965f"),
+};
+
+const PORTFOLIO = [
+  unsplash("photo-1643837832861-ba85d3b046d9"),
+  unsplash("photo-1686671805337-7d8aa64b965f"),
+  unsplash("photo-1678356163587-6bb3afb89679"),
+];
+
+const sp = (sw: string, en: string) => ({ sw, en });
+
 // MVP catalog reduced to 4 services per the founder's feedback on the PRD:
 // men's haircut, beard, kids' haircut, basic women's styling.
 export const services: Service[] = [
@@ -83,6 +100,11 @@ export const providers: Provider[] = [
     yearsExperience: 8,
     area: "Kinondoni",
     completedJobs: 612,
+    image: PHOTOS.juma,
+    portfolio: PORTFOLIO,
+    specialties: [sp("Fade", "Fade"), sp("Ndevu", "Beard styling"), sp("Mitindo ya asili", "Traditional cuts"), sp("Watoto", "Kids' cuts")],
+    phone: "+255 712 345 678",
+    vehicle: "Boda boda · MC 482 DKT",
   },
   {
     id: "prv_baraka",
@@ -103,6 +125,11 @@ export const providers: Provider[] = [
     yearsExperience: 5,
     area: "Mbezi Beach",
     completedJobs: 274,
+    image: PHOTOS.baraka,
+    portfolio: PORTFOLIO,
+    specialties: [sp("Fade", "Fade"), sp("Deki", "Line-up"), sp("Ndevu", "Beard trim")],
+    phone: "+255 713 222 333",
+    vehicle: "Bajaji · T 771 DLM",
   },
   {
     id: "prv_neema",
@@ -123,6 +150,9 @@ export const providers: Provider[] = [
     yearsExperience: 6,
     area: "Ilala",
     completedJobs: 389,
+    specialties: [sp("Kusuka", "Braiding"), sp("Mitindo rahisi", "Simple styles"), sp("Watoto", "Kids' cuts")],
+    phone: "+255 714 444 555",
+    vehicle: "Bajaji · T 305 DGK",
   },
   {
     id: "prv_amani",
@@ -143,6 +173,11 @@ export const providers: Provider[] = [
     yearsExperience: 3,
     area: "Kariakoo",
     completedJobs: 142,
+    image: PHOTOS.amani,
+    portfolio: PORTFOLIO,
+    specialties: [sp("Mitindo ya asili", "Traditional cuts"), sp("Watoto", "Kids' cuts"), sp("Ndevu", "Beard trim")],
+    phone: "+255 715 666 777",
+    vehicle: "Boda boda · MC 119 EAB",
   },
   {
     id: "prv_zawadi",
@@ -163,6 +198,9 @@ export const providers: Provider[] = [
     yearsExperience: 9,
     area: "Masaki",
     completedJobs: 511,
+    specialties: [sp("Mitindo ya harusi", "Bridal styling"), sp("Kusuka", "Braiding")],
+    phone: "+255 716 888 999",
+    vehicle: "Toyota IST · T 640 DQZ",
   },
 ];
 
@@ -250,6 +288,7 @@ export const seedBookings: Booking[] = [
     bookingCharge: BOOKING_CHARGE,
     total: 12000,
     paymentMethod: "mpesa",
+    paymentStatus: "paid",
     status: "completed",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
     review: { rating: 5, comment: "Kazi safi sana!", createdAt: new Date().toISOString() },
@@ -267,10 +306,34 @@ export const seedBookings: Booking[] = [
     bookingCharge: BOOKING_CHARGE,
     total: 6000,
     paymentMethod: "cash",
+    paymentStatus: "paid",
     status: "completed",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     review: { rating: 4, createdAt: new Date().toISOString() },
   },
+];
+
+// Historical reviews shown on provider profiles, on top of live reviews
+// left through the app.
+export interface SeedReview {
+  providerId: string;
+  name: string;
+  rating: number;
+  comment: string;
+  daysAgo: number;
+}
+
+export const seedReviews: SeedReview[] = [
+  { providerId: "prv_juma", name: "Michael N.", rating: 5, comment: "Kazi safi, amefika kwa wakati.", daysAgo: 2 },
+  { providerId: "prv_juma", name: "Sarah M.", rating: 5, comment: "Best barber in Dar! Always on time.", daysAgo: 7 },
+  { providerId: "prv_juma", name: "James M.", rating: 4, comment: "Great cut, very friendly.", daysAgo: 14 },
+  { providerId: "prv_baraka", name: "Peter L.", rating: 5, comment: "Deki safi sana, nitamwita tena.", daysAgo: 3 },
+  { providerId: "prv_baraka", name: "Hamisi R.", rating: 4, comment: "Good beard trim, a bit late.", daysAgo: 9 },
+  { providerId: "prv_neema", name: "Grace T.", rating: 5, comment: "Patient with my daughter. Highly recommend.", daysAgo: 4 },
+  { providerId: "prv_neema", name: "Mwanaidi S.", rating: 5, comment: "Amenisuka vizuri sana.", daysAgo: 12 },
+  { providerId: "prv_amani", name: "Joseph K.", rating: 5, comment: "Young but very skilled.", daysAgo: 5 },
+  { providerId: "prv_amani", name: "Ally B.", rating: 4, comment: "Huduma nzuri kwa bei nafuu.", daysAgo: 10 },
+  { providerId: "prv_zawadi", name: "Fatma A.", rating: 5, comment: "Perfect styling for my event.", daysAgo: 6 },
 ];
 
 // Icon name (see components/Icon.tsx) per service and category.

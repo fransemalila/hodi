@@ -6,11 +6,12 @@ import { useI18n } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { CURRENT_PROVIDER_ID } from "@/lib/current";
 import { serviceById, COMMISSION_RATE } from "@/lib/mock-data";
-import { localized, tzs } from "@/lib/format";
+import { formatWhen, localized, tzs } from "@/lib/format";
 import { Avatar, Badge, Button, Card, SectionLabel, cx } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { ServiceIcon } from "@/components/cards";
 import { LangToggle } from "@/components/LangToggle";
+import { Wordmark } from "@/components/brand/Logo";
 import type { Booking } from "@/lib/types";
 
 export default function ProviderDashboard() {
@@ -32,6 +33,13 @@ export default function ProviderDashboard() {
       {/* Header */}
       <div className={cx("relative overflow-hidden px-5 pb-7 pt-5 text-white transition-colors", online ? "bg-brand-700" : "bg-ink")}>
         <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Wordmark tone="white" className="h-5 w-auto" />
+            <span className="rounded-full bg-white/15 px-2 py-0.5 text-2xs font-bold uppercase tracking-wide text-accent-300">Partner</span>
+          </div>
+          <LangToggle />
+        </div>
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar name={me.name} size={44} color="bg-white/20" />
@@ -42,7 +50,6 @@ export default function ProviderDashboard() {
               </div>
             </div>
           </div>
-          <LangToggle />
         </div>
 
         {/* Availability toggle */}
@@ -152,7 +159,7 @@ function IncomingCard({ booking, onAccept, onReject }: { booking: Booking; onAcc
           <div className="flex-1">
             <div className="font-semibold tracking-tight">{localized(svc.name, lang)}</div>
             <div className="text-[13px] text-ink-muted">
-              {booking.customerName} · {booking.scheduledFor === "now" ? t("rightNow") : booking.scheduledFor}
+              {booking.customerName} · {booking.scheduledFor === "now" ? t("rightNow") : formatWhen(booking.scheduledFor, lang)}
             </div>
           </div>
         </div>

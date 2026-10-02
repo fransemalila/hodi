@@ -38,6 +38,13 @@ export interface Provider {
   yearsExperience: number;
   area: string;
   completedJobs: number;
+  /** Profile photo URL. Falls back to an initials avatar when absent. */
+  image?: string;
+  portfolio?: string[];
+  specialties?: { sw: string; en: string }[];
+  phone?: string;
+  /** How they travel to the customer, e.g. "Boda boda · MC 123 ABC". */
+  vehicle?: string;
 }
 
 export interface SavedLocation {
@@ -49,7 +56,9 @@ export interface SavedLocation {
   lng: number;
 }
 
-export type PaymentMethod = "mpesa" | "tigopesa" | "airtel" | "cash";
+export type PaymentMethod = "mpesa" | "tigopesa" | "airtel" | "halopesa" | "cash";
+
+export type PaymentStatus = "unpaid" | "paid";
 
 export type BookingStatus =
   | "pending" // waiting for provider to accept
@@ -79,8 +88,16 @@ export interface Booking {
   bookingCharge: number;
   total: number;
   paymentMethod: PaymentMethod;
+  paymentStatus?: PaymentStatus;
+  paidAt?: string;
+  /** Mobile-money number the STK push was sent to. */
+  payerPhone?: string;
+  tip?: number;
   status: BookingStatus;
   createdAt: string;
+  /** Last time the status changed; drives the live-tracking simulation. */
+  updatedAt?: string;
+  cancelledBy?: "customer" | "provider" | "admin";
   review?: Review;
 }
 
@@ -90,4 +107,6 @@ export interface CustomerProfile {
   lang: Lang;
   referralCode?: string;
   locations: SavedLocation[];
+  /** Id of the location used by default when booking. */
+  defaultLocationId?: string;
 }

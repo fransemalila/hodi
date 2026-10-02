@@ -1,17 +1,20 @@
 {
-  "name": "HODI — Barber to your door",
+  "name": "HODI · Kinyozi mlangoni",
   "short_name": "HODI",
-  "description": "Request a professional barber to your door in Dar es Salaam. Track arrival, pay with mobile money.",
+  "description": "Book a professional barber to your door in Dar es Salaam. Track arrival, pay with mobile money.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0F3D2E",
   "theme_color": "#0F3D2E",
+  "lang": "sw",
+  "categories": ["lifestyle", "beauty"],
   "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

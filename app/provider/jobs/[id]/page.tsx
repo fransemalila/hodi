@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { serviceById } from "@/lib/mock-data";
-import { localized, tzs } from "@/lib/format";
+import { formatWhen, localized, tzs } from "@/lib/format";
+import { paymentName } from "@/lib/payments";
 import { Avatar, Badge, Button, Card, SectionLabel } from "@/components/ui";
 import { Icon, IconName } from "@/components/Icon";
 import { TopBar } from "@/components/MobileShell";
@@ -50,9 +51,15 @@ export default function ProviderJob({ params }: { params: { id: string } }) {
           <Avatar name={booking.customerName} size={48} color="blue" />
           <div className="flex-1">
             <div className="font-semibold tracking-tight">{booking.customerName}</div>
-            <Badge tone={isCash ? "amber" : "green"} className="mt-1">
-              {isCash ? t("cashLabel") : booking.paymentMethod.toUpperCase()}
-            </Badge>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              <Badge tone={isCash ? "amber" : "blue"}>{isCash ? t("cashLabel") : paymentName(booking.paymentMethod, lang)}</Badge>
+              <Badge tone={booking.paymentStatus === "paid" ? "green" : "amber"}>
+                {booking.paymentStatus === "paid" ? t("paid") : t("unpaid")}
+              </Badge>
+            </div>
+            <div className="mt-1 text-2xs text-ink-muted">
+              {booking.scheduledFor === "now" ? t("rightNow") : formatWhen(booking.scheduledFor, lang)}
+            </div>
           </div>
           <div className="font-extrabold text-brand-700">{tzs(booking.servicePrice)}</div>
         </Card>

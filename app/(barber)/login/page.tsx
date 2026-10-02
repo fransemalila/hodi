@@ -1,93 +1,276 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Scissors, Phone } from "lucide-react";
+import { ArrowLeft, Phone, User, Gift } from "lucide-react";
 import { Button, Input } from "@/components/barber/ui";
+import { Wordmark } from "@/components/brand/Logo";
+import { LangToggle } from "@/components/LangToggle";
+import { useI18n } from "@/lib/i18n";
+import { isValidTzPhone, normalizePhone, useStore } from "@/lib/store";
+
+type Step = "phone" | "otp" | "name";
+const OTP_LEN = 6;
+const RESEND_SECS = 30;
 
 export default function LoginScreen() {
-  const [phoneNumber, setPhoneNumber] = useState("");
   const router = useRouter();
+  const { t } = useI18n();
+  const { profile, signIn, isAuthed, hydrated } = useStore();
+
+  const [step, setStep] = useState<Step>("phone");
+  const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState(false);
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LEN).fill(""));
+  const [resendIn, setResendIn] = useState(RESEND_SECS);
+  const [verifying, setVerifying] = useState(false);
+  const [name, setName] = useState("");
+  const [referral, setReferral] = useState("");
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (hydrated && isAuthed) router.replace("/home");
+  }, [hydrated, isAuthed, router]);
+
+  useEffect(() => {
+    if (step !== "otp") return;
+    const id = setInterval(() => setResendIn((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(id);
+  }, [step]);
+
+  const sendCode = () => {
+    if (!isValidTzPhone(phone)) {
+      setPhoneError(true);
+      return;
+    }
+    setPhoneError(false);
+    setOtp(Array(OTP_LEN).fill(""));
+    setResendIn(RESEND_SECS);
+    setStep("otp");
+    setTimeout(() => otpRefs.current[0]?.focus(), 50);
+  };
+
+  const setDigit = (i: number, v: string) => {
+    const digits = v.replace(/\D/g, "");
+    if (!digits) {
+      setOtp((prev) => prev.map((d, j) => (j === i ? "" : d)));
+      return;
+    }
+    // Support pasting the whole code into any box.
+    setOtp((prev) => {
+      const next = [...prev];
+      digits
+        .slice(0, OTP_LEN - i)
+        .split("")
+        .forEach((d, k) => (next[i + k] = d));
+      return next;
+    });
+    otpRefs.current[Math.min(i + digits.length, OTP_LEN - 1)]?.focus();
+  };
+
+  const code = otp.join("");
+  const fullPhone = normalizePhone(phone);
+  const returning = fullPhone === profile.phone;
+
+  const verify = () => {
+    if (code.length !== OTP_LEN) return;
+    setVerifying(true);
+    setTimeout(() => {
+      setVerifying(false);
+      if (returning) {
+        signIn(profile.name, fullPhone);
+        router.replace("/home");
+      } else {
+        setStep("name");
+      }
+    }, 900);
+  };
+
+  // auto-submit once all digits are in
+  useEffect(() => {
+    if (step === "otp" && code.length === OTP_LEN && !verifying) verify();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, step]);
+
+  const finish = () => {
+    if (!name.trim()) return;
+    signIn(name.trim(), fullPhone, referral.trim() || undefined);
+    router.replace("/home");
+  };
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-white">
       {/* Header */}
-      <div className="rounded-b-[40px] bg-[#0F3D2E] px-8 pb-32 pt-16">
+      <div className="relative rounded-b-[40px] bg-[#0F3D2E] px-8 pb-32 pt-14">
+        <div className="absolute right-6 top-6">
+          <LangToggle className="border-white/20" />
+        </div>
+        {step !== "phone" && (
+          <button
+            onClick={() => setStep(step === "name" ? "otp" : "phone")}
+            aria-label={t("back")}
+            className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
+          >
+            <ArrowLeft className="h-5 w-5 text-white" />
+          </button>
+        )}
         <div className="flex flex-col items-center">
-          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#C9A227]">
-            <Scissors className="h-10 w-10 text-[#0F3D2E]" strokeWidth={2.5} />
-          </div>
-          <h1 className="mb-2 text-4xl font-bold text-white">HODI</h1>
-          <p className="text-sm text-[#C9A227]">Tunakuletea kinyozi mlangoni</p>
+          <Wordmark tone="white" className="mb-4 w-40" />
+          <p className="text-sm text-[#C9A227]">{t("tagline")}</p>
         </div>
       </div>
 
-      {/* Login Form */}
-      <div className="-mt-20 flex-1 px-8">
-        <div className="rounded-3xl bg-white p-8 shadow-lg">
-          <h2 className="mb-2 text-2xl font-bold text-[#0F3D2E]">Welcome Back</h2>
-          <p className="mb-8 text-gray-600">Enter your phone number to continue</p>
+      <div className="-mt-20 flex-1 px-6 pb-10">
+        <div key={step} className="animate-fade-up rounded-3xl bg-white p-7 shadow-lg">
+          {step === "phone" && (
+            <>
+              <h2 className="mb-2 text-2xl font-bold text-[#0F3D2E]">{t("welcomeBack")}</h2>
+              <p className="mb-7 text-gray-600">{t("enterPhone")}</p>
 
-          <div className="mb-6">
-            <label className="mb-2 block text-sm text-gray-600">Phone Number</label>
-            <div className="flex gap-3">
-              <div className="flex h-14 w-24 items-center justify-center rounded-xl bg-gray-100">
-                <span className="font-medium text-[#0F3D2E]">+255</span>
+              <label htmlFor="phone" className="mb-2 block text-sm text-gray-600">
+                {t("phoneNumber")}
+              </label>
+              <div className="flex gap-3">
+                <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                  <span className="font-medium text-[#0F3D2E]">+255</span>
+                </div>
+                <div className="relative flex-1">
+                  <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel-national"
+                    placeholder="712 345 678"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      setPhoneError(false);
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && sendCode()}
+                    className={`h-14 rounded-xl pl-12 text-lg ${phoneError ? "border-rose-400" : "border-gray-200"}`}
+                  />
+                </div>
               </div>
-              <div className="relative flex-1">
-                <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              {phoneError && <p className="mt-2 text-sm text-rose-600">{t("invalidPhone")}</p>}
+
+              <Button
+                onClick={sendCode}
+                className="mt-6 h-14 w-full rounded-full bg-[#0F3D2E] text-lg text-white hover:bg-[#0F3D2E]/90"
+              >
+                {t("sendOtp")}
+              </Button>
+
+              <p className="mt-7 text-center text-xs text-gray-500">
+                {t("termsPrefix")} <span className="text-[#0F3D2E] underline">{t("terms")}</span> {t("and")}{" "}
+                <span className="text-[#0F3D2E] underline">{t("privacy")}</span>
+              </p>
+            </>
+          )}
+
+          {step === "otp" && (
+            <>
+              <h2 className="mb-2 text-2xl font-bold text-[#0F3D2E]">{t("enterOtp")}</h2>
+              <p className="mb-1 text-gray-600">{t("otpSentTo")}</p>
+              <p className="mb-6 font-semibold text-[#0F3D2E]">{fullPhone}</p>
+
+              <div className="flex justify-between gap-2">
+                {otp.map((d, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => {
+                      otpRefs.current[i] = el;
+                    }}
+                    value={d}
+                    inputMode="numeric"
+                    autoComplete={i === 0 ? "one-time-code" : "off"}
+                    aria-label={`Digit ${i + 1}`}
+                    onChange={(e) => setDigit(i, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Backspace" && !d && i > 0) otpRefs.current[i - 1]?.focus();
+                    }}
+                    className="h-14 w-full min-w-0 rounded-xl border-2 border-gray-200 text-center text-xl font-bold text-[#0F3D2E] outline-none transition focus:border-[#0F3D2E]"
+                  />
+                ))}
+              </div>
+              <p className="mt-3 rounded-lg bg-[#C9A227]/10 px-3 py-2 text-center text-xs font-medium text-[#8a6d12]">
+                {t("demoOtpHint")}
+              </p>
+
+              <Button
+                onClick={verify}
+                disabled={code.length !== OTP_LEN || verifying}
+                className="mt-6 h-14 w-full rounded-full bg-[#0F3D2E] text-lg text-white hover:bg-[#0F3D2E]/90 disabled:opacity-50"
+              >
+                {verifying ? (
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  t("verify")
+                )}
+              </Button>
+
+              <div className="mt-5 flex items-center justify-between text-sm">
+                <button onClick={() => setStep("phone")} className="font-medium text-gray-500 hover:text-[#0F3D2E]">
+                  {t("changeNumber")}
+                </button>
+                {resendIn > 0 ? (
+                  <span className="text-gray-400">
+                    {t("resendIn")} 0:{String(resendIn).padStart(2, "0")}
+                  </span>
+                ) : (
+                  <button onClick={sendCode} className="font-semibold text-[#C9A227]">
+                    {t("resendCode")}
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {step === "name" && (
+            <>
+              <h2 className="mb-2 text-2xl font-bold text-[#0F3D2E]">{t("whatsYourName")}</h2>
+              <p className="mb-6 text-gray-600">{t("nameHint")}</p>
+
+              <label htmlFor="name" className="mb-2 block text-sm text-gray-600">
+                {t("yourName")}
+              </label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                 <Input
-                  type="tel"
-                  placeholder="712 345 678"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  id="name"
+                  autoFocus
+                  autoComplete="given-name"
+                  placeholder="Asha"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && finish()}
                   className="h-14 rounded-xl border-gray-200 pl-12 text-lg"
                 />
               </div>
-            </div>
-          </div>
 
-          <Button
-            onClick={() => router.push("/home")}
-            className="mb-6 h-14 w-full rounded-full bg-[#0F3D2E] text-lg text-white hover:bg-[#0F3D2E]/90"
-          >
-            Continue
-          </Button>
+              <label htmlFor="ref" className="mb-2 mt-5 block text-sm text-gray-600">
+                {t("referralOptional")}
+              </label>
+              <div className="relative">
+                <Gift className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Input
+                  id="ref"
+                  placeholder="HODI-XXXX"
+                  value={referral}
+                  onChange={(e) => setReferral(e.target.value.toUpperCase())}
+                  className="h-14 rounded-xl border-gray-200 pl-12 text-lg uppercase"
+                />
+              </div>
 
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-4 text-gray-500">Or continue with</span>
-            </div>
-          </div>
-
-          {/* Social Login */}
-          <div className="flex gap-4">
-            <button className="flex h-14 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-gray-200 transition-colors hover:border-[#0F3D2E]">
-              <svg className="h-6 w-6" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              <span className="font-medium text-gray-700">Google</span>
-            </button>
-            <button className="flex h-14 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-gray-200 transition-colors hover:border-[#0F3D2E]">
-              <svg className="h-6 w-6" fill="#1877F2" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-              <span className="font-medium text-gray-700">Facebook</span>
-            </button>
-          </div>
-
-          <p className="mt-8 text-center text-xs text-gray-500">
-            By continuing, you agree to our{" "}
-            <a href="#" className="text-[#0F3D2E] underline">Terms of Service</a> and{" "}
-            <a href="#" className="text-[#0F3D2E] underline">Privacy Policy</a>
-          </p>
+              <Button
+                onClick={finish}
+                disabled={!name.trim()}
+                className="mt-6 h-14 w-full rounded-full bg-[#0F3D2E] text-lg text-white hover:bg-[#0F3D2E]/90 disabled:opacity-50"
+              >
+                {t("continue")}
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>

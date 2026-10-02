@@ -2,27 +2,37 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Scissors } from "lucide-react";
+import { LogoMark, Wordmark } from "@/components/brand/Logo";
+import { useI18n } from "@/lib/i18n";
+import { useStore } from "@/lib/store";
 
 export default function SplashScreen() {
   const router = useRouter();
+  const { t } = useI18n();
+  const { hydrated, isAuthed, onboarded } = useStore();
 
   useEffect(() => {
-    const timer = setTimeout(() => router.push("/onboarding"), 2500);
+    if (!hydrated) return;
+    const dest = isAuthed ? "/home" : onboarded ? "/login" : "/onboarding";
+    const timer = setTimeout(() => router.replace(dest), 2200);
     return () => clearTimeout(timer);
-  }, [router]);
+  }, [hydrated, isAuthed, onboarded, router]);
 
   return (
-    <div className="flex min-h-full flex-1 flex-col items-center justify-center bg-[#0F3D2E] px-6">
-      <div className="flex flex-col items-center gap-6 animate-fade-up">
-        <div className="relative">
-          <span className="absolute inset-0 rounded-full bg-[#C9A227]/30 blur-xl" />
-          <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[#C9A227]">
-            <Scissors className="h-12 w-12 text-[#0F3D2E]" strokeWidth={2.5} />
-          </div>
-        </div>
-        <h1 className="text-6xl font-bold tracking-wider text-white">HODI</h1>
-        <p className="mt-2 text-center text-lg text-[#C9A227]">Tunakuletea kinyozi mlangoni</p>
+    <div className="relative flex min-h-full flex-1 flex-col items-center justify-center overflow-hidden bg-[#0F3D2E] px-6">
+      <LogoMark tone="white" className="pointer-events-none absolute -right-24 -top-16 h-80 w-80 opacity-[0.04]" />
+      <div className="flex flex-col items-center animate-fade-up">
+        <Wordmark tone="white" className="w-60" />
+        <p className="mt-6 text-center text-lg font-medium text-[#C9A227]">{t("tagline")}</p>
+      </div>
+      <div className="absolute bottom-14 flex gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="h-1.5 w-1.5 animate-pulse rounded-full bg-white/50"
+            style={{ animationDelay: `${i * 200}ms` }}
+          />
+        ))}
       </div>
     </div>
   );
